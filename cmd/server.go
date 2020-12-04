@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"io/ioutil"
 	"net"
@@ -30,14 +31,19 @@ func main() {
 
 	err = http.Serve(lsn, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		l.Infow("Got request", "method", r.Method, "path", r.URL.String(), "content-length", r.ContentLength)
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			l.Infow("Failed request", err.Error())
-			_, _ = w.Write([]byte("Bad error"))
+		if r.ContentLength != 0 {
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				l.Infow("Failed request", err.Error())
+				_, _ = w.Write([]byte("Bad error"))
+			} else {
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write(b)
+			}
 		} else {
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write(b)
+			w.Write([]byte(fmt.Sprintf("Got %s %s", r.Method, r.URL.String())))
 		}
 	}))
 	if err != nil {
