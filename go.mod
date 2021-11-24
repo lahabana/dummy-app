@@ -1,6 +1,6 @@
 module github.com/lahabana/dummy-app
 
-go 1.14
+go 1.17
 
 require (
 	go.uber.org/multierr v1.6.0 // indirect
